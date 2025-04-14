@@ -1,49 +1,59 @@
-<div style="text-align: center; background: linear-gradient(to right, #06beb6, #48b1bf); padding: 20px; border-radius: 10px; color: white;">
-    <h1 style="font-size: 2.5em; margin: 0;">Gen AI Project</h1>
-    <p style="font-size: 1.2em;">A comprehensive tutorial on building, fine-tuning, and deploying lightweight, state-of-the-art NLP models using Gemma.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h1>Gen AI Project</h1>
+
+<div class="highlight">
+    <strong>Welcome to the Gen AI Project</strong>: A comprehensive tutorial on building, fine-tuning, and deploying lightweight, state-of-the-art NLP models using Gemma.
 </div>
 
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">About Gemma</h2>
-    <p>Gemma is a family of lightweight, state-of-the-art open models developed using the same research and technology behind the Gemini models. These models are pre-trained on large text corpora in a self-supervised manner and are designed for a variety of NLP tasks.</p>
-    <p><strong>Key Features:</strong></p>
-    <ul>
-        <li>High performance with low computational overhead</li>
-        <li>Support for advanced fine-tuning techniques like <strong>Low Rank Adaptation (LoRA)</strong></li>
-        <li>Adaptable for domain-specific NLP tasks</li>
-    </ul>
+<h2>About Gemma</h2>
+<p>Gemma is a family of lightweight, state-of-the-art open models developed using the same research and technology behind the Gemini models. These models are designed for various NLP tasks and are pre-trained on large text corpora in a self-supervised manner.</p>
+<p>Gemma models offer:</p>
+<ul>
+    <li>High performance with low computational overhead</li>
+    <li>Advanced fine-tuning techniques like <strong>Low Rank Adaptation (LoRA)</strong></li>
+    <li>Support for domain-specific tasks</li>
+</ul>
+
+<h2>Features of this Tutorial</h2>
+<ul class="steps">
+    <li>Install and configure dependencies</li>
+    <li>Load and preprocess datasets</li>
+    <li>Use the <strong>GemmaCausalLM</strong> model for inference</li>
+    <li>Fine-tune the model using <strong>LoRA</strong> techniques</li>
+</ul>
+
+<h2>Getting Started</h2>
+
+<h3>Install Dependencies</h3>
+<div class="code-block">
+    <pre>
+!pip install -q -U keras-nlp
+!pip install -q -U keras>=3
+    </pre>
 </div>
+<p>Ensure that Keras and KerasNLP are up-to-date for compatibility.</p>
 
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">Features of this Tutorial</h2>
-    <ul>
-        <li>Step-by-step installation and configuration of dependencies</li>
-        <li>Loading and preprocessing datasets</li>
-        <li>Using the <strong>GemmaCausalLM</strong> model for inference</li>
-        <li>Fine-tuning the model with <strong>LoRA</strong></li>
-    </ul>
-</div>
-
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">Quick Start</h2>
-    <h3 style="color: #06beb6;">1. Install Dependencies</h3>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <code>!pip install -q -U keras-nlp</code><br>
-        <code>!pip install -q -U keras>=3</code>
-    </div>
-
-    <h3 style="color: #06beb6;">2. Set Up the Environment</h3>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <pre>
+<h3>Set Up the Environment</h3>
+<div class="code-block">
+    <pre>
 import os
-os.environ["KERAS_BACKEND"] = "jax"
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "1.00"
-        </pre>
-    </div>
 
-    <h3 style="color: #06beb6;">3. Load and Preprocess the Dataset</h3>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <pre>
+os.environ["KERAS_BACKEND"] = "jax" 
+os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "1.00"
+    </pre>
+</div>
+
+<h3>Load and Preprocess the Dataset</h3>
+<p>We are using a subset of 1000 training examples from the <a href="https://www.kaggle.com/datasets">Databricks Dolly 15K Dataset</a>.</p>
+<div class="code-block">
+    <pre>
 import json
 data = []
 with open('/path/to/databricks-dolly-15k.jsonl') as file:
@@ -51,53 +61,61 @@ with open('/path/to/databricks-dolly-15k.jsonl') as file:
         features = json.loads(line)
         if features["context"]:
             continue
-        template = "Instruction:\n{instruction}\n\nResponse:\n{response}"
+        template = "Instruction:\\n{instruction}\\n\\nResponse:\\n{response}"
         data.append(template.format(**features))
 data = data[:1000]
-        </pre>
-    </div>
+    </pre>
+</div>
 
-    <h3 style="color: #06beb6;">4. Load the Model</h3>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <pre>
+<h3>Load the Model</h3>
+<p>We are using the <strong>GemmaCausalLM</strong> model for causal language modeling:</p>
+<div class="code-block">
+    <pre>
 import keras_nlp
+
 gemma_lm = keras_nlp.models.GemmaCausalLM.from_preset("gemma_2b_en")
 gemma_lm.summary()
-        </pre>
-    </div>
+    </pre>
 </div>
 
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">Fine-Tuning with LoRA</h2>
-    <p>Enable Low Rank Adaptation (LoRA) to reduce trainable parameters and fine-tune the model efficiently:</p>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <pre>
+<h2>Fine-Tuning with LoRA</h2>
+<p>Fine-tune the model using Low Rank Adaptation (LoRA) to reduce the number of trainable parameters:</p>
+<div class="code-block">
+    <pre>
 gemma_lm.backbone.enable_lora(rank=4)
 gemma_lm.summary()
-        </pre>
-    </div>
+    </pre>
+</div>
+<p>Note: LoRA reduces trainable parameters significantly, making the model more efficient.</p>
+
+<h2>Inference</h2>
+<p>Generate responses based on your prompts:</p>
+<div class="code-block">
+    <pre>
+prompt = template.format(
+    instruction="What should I do on a trip to Europe?",
+    response="",
+)
+print(gemma_lm.generate(prompt, max_length=256))
+    </pre>
 </div>
 
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">Inference</h2>
-    <p>Generate responses based on your prompt:</p>
-    <div style="background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace;">
-        <pre>
-prompt = "What should I do on a trip to Europe?"
-response = gemma_lm.generate(prompt, max_length=256)
-print(response)
-        </pre>
-    </div>
-</div>
+<h2>Results</h2>
+<p>The model provides detailed and accurate responses after fine-tuning. For example:</p>
+<ul>
+    <li><strong>Europe Trip Prompt:</strong> Suggestions for famous sights and itinerary planning.</li>
+    <li><strong>Photosynthesis Prompt:</strong> Simplified explanations suitable for children.</li>
+</ul>
 
-<div style="margin: 20px 0;">
-    <h2 style="color: #48b1bf;">Results and Insights</h2>
-    <ul>
-        <li><strong>Before fine-tuning:</strong> Basic responses that may not align well with the prompt.</li>
-        <li><strong>After fine-tuning:</strong> High-quality responses tailored to the domain-specific data.</li>
-    </ul>
-</div>
+<h2>Conclusion</h2>
+<p>This tutorial demonstrates how to effectively use Gemma models for NLP tasks. By leveraging LoRA for fine-tuning, we achieve high-quality results with minimal computational resources.</p>
 
-<div style="margin: 20px 0; text-align: center; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;">
-    <p>For more details, visit the <a href="https://keras.io/api/keras_nlp/models/" style="color: #48b1bf; text-decoration: none;">KerasNLP Documentation</a>.</p>
-</div>
+<h2>Further Reading</h2>
+<p>For more details, check out the <a href="https://keras.io/api/keras_nlp/models/">KerasNLP documentation</a>.</p>
+
+<footer>
+    <p>Created by: <a href="https://github.com/roshanrateria">Roshan Rateria</a> | Repository: <a href="https://github.com/roshanrateria/gen-ai">Gen AI Project</a></p>
+</footer>
+
+</body>
+</html>
